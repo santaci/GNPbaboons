@@ -1,0 +1,34 @@
+# Parameters
+
+# HOME DIR
+home_folder: /user/project_Folder/
+
+# FASTA REF
+REF_FASTA: /user/path/to_ref.fna
+
+#INPUT DIR
+FASTQ_DIR: /user/path/to_reads_folder/
+
+# OUTPUT DIR
+OUT_DIR: /user/project_Folder/snakemake_out/
+
+#OUTPUT
+BAM_DIR: BAM/
+BAM_DIR_view: BAMviewq10/
+FASTA_DIR: FASTAnewaln/
+
+
+# Image of singularity
+singularity_img: "docker://continuumio/miniconda3:4.9.2"
+
+#parameter angsd
+angsd_env_file: 'condaenv_rsync_angsd'
+angsd_minmapq: 5
+angsd_minq: 5
+angsd_mindepth: 1
+# this is Y in Panubis1
+angsd_chr2extract: 'NC_044997.1'
+
+# Define the name of the config .json files created before with python scripts
+CLUSTER_JSON: 'cluster.json'
+SAMPLES_JSON: 'sample.json'

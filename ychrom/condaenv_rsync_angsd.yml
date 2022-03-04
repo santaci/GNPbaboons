@@ -1,0 +1,8 @@
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - angsd=0.933=hd2e4403_1
+  - rsync=3.2.3=h7593e3f_1
+
