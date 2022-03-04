@@ -1,0 +1,182 @@
+# REFERENCE
+REF="/home/users/cindy/local/baboons/work/bams/GCA_000264685.2_Panu_3.0_genomic.fna"
+F_OUT = 3852
+F_IN_PAIRED = 3 # only for paired-end data
+#MIN_MQ = 30
+
+# SOFTWARE
+BWA="/home/krishang/software/bwa/bwa/bwa"
+BGZIP="/home/krishang/software/htslib/htslib/bin/bgzip"
+SAMTOOLS="/home/krishang/software/samtools/samtools-1.9/bin/samtools"
+NGMERGE="/home/krishang/software/ngmerge/NGmerge/NGmerge"
+FASTQC="/home/krishang/software/fastqc/FastQC/fastqc"
+MULTIQC="/home/krishang/software/vir_python36/bin/multiqc"
+
+OUTMAIN="/steveData/cindy/bf186/results/"
+BWA_THREADS = 20
+## update leopard_config_test to include all samples.
+## add fastqc after mapping
+## replace adapterremoval with ngmerge
+## add flag for paired-end mapping to remove all not properly paired.
+#configfile:"leopard_config_test2.yaml"
+# OUTMAIN = config.pop("OUTMAIN")
+
+
+           
+wildcard_constraints:
+    sample = "|".join(config.keys()),
+    
+rule all:
+    input:
+        os.path.join(OUTMAIN, "multiqc", "report.html")
+
+rule all_fastqc:
+    input:
+        expand(os.path.join(OUTMAIN, "fastqc_pretrim", "{sample}"), sample=config.keys())
+
+rule all_postmap:
+    input:
+        os.path.join(OUTMAIN, "fastqc_postmap_multiqc", "report.html")
+
+rule fastqc_pre_trim:
+    ## https://stackoverflow.com/a/50882104
+    input:
+        fq1 = lambda wildcards: config[wildcards.sample][0],
+        fq2 = lambda wildcards: config[wildcards.sample][1]
+    output:
+        directory(os.path.join(OUTMAIN, "fastqc_pretrim", "{sample}"))
+    threads: 2
+    log:
+        os.path.join(OUTMAIN, "fastqc_pretrim", "{sample}.log")
+    shell: """ 
+    mkdir -p {output}
+    {FASTQC} -o {output} -f fastq -t {threads} {input} &> {log};
+"""
+
+
+rule multiqc_fastqc:
+    input:
+        expand(os.path.join(OUTMAIN, "fastqc_pretrim", "{sample}"),sample=config.keys())
+    output:
+        f=os.path.join(OUTMAIN, "fastqc_pretrim_multiqc", "report.html")
+    params:
+        dirname = lambda wildcards, output: os.path.dirname(output.f),
+        base =  lambda wildcards, output: os.path.basename(output.f).replace(".html", "")
+    run:
+        dirs = set()
+        for f in input:
+            dirs.add(f)
+        dirs_string = " ".join(dirs)
+        shell("{MULTIQC} -f -o {params.dirname} -n {params.base} {dirs_string}")
+
+rule bwa_mem_samtools:
+    input:
+        p1 = lambda wildcards: config[wildcards.sample][0],
+        p2 = lambda wildcards: config[wildcards.sample][1],
+        bwaindex =  REF+".amb",
+        samtoolsindex =  REF+".fai",
+    output:
+        bam = os.path.join(OUTMAIN, "bam", "{sample}_paired.bam"),
+        #bam = temp(os.path.join(OUTMAIN, "bam", "{sample}_paired.bam")),
+    params:
+        rg = r"@RG\tID:{sample}-paired\tSM:{sample}" ,
+        prefix=lambda wildcards, output: output.bam+".temp",
+    log:
+        os.path.join(OUTMAIN, "bam", "{sample}.bwa.paired.log"),
+    threads: BWA_THREADS
+    shell: """
+    # -M marks short split hits as secondary
+       {BWA} mem -M -R '{params.rg}' -t {threads} {REF} {input.p1}  {input.p2} 2> {log} | {SAMTOOLS} sort -n -T {params.prefix}_n -O BAM -@ 2 | {SAMTOOLS} fixmate -@ 2 -m -O BAM /dev/stdin /dev/stdout | {SAMTOOLS} sort -T {params.prefix}_c -OBAM -@ 2 |  {SAMTOOLS}  calmd -Q - {REF} | {SAMTOOLS} markdup -@ 2 -T  {params.prefix}_markdup /dev/stdin /dev/stdout | {SAMTOOLS} view -f {F_IN_PAIRED} -F {F_OUT} -@ 4 -OBAM -o {output.bam} -
+"""
+
+rule index_bam:
+    input:
+        bam = rules.bwa_mem_samtools.output.bam
+    output:
+        rules.bwa_mem_samtools.output.bam + ".bai"
+    shell:
+        "{SAMTOOLS} index -@ 2 {input}"
+
+rule flagstat_bam:
+    input:
+        bam = rules.bwa_mem_samtools.output.bam,
+        bai = rules.index_bam.output[0]
+    output:
+        stats = os.path.join(OUTMAIN, "bam", "{sample}.flagstat"),
+    shell:
+        "{SAMTOOLS} flagstat {input.bam} > {output}"
+
+rule stats_bam:
+    input:
+        bam = rules.bwa_mem_samtools.output.bam,
+        bai = rules.index_bam.output[0]
+    output:
+        stats = os.path.join(OUTMAIN, "bam", "{sample}.stats")
+    shell:
+        "{SAMTOOLS} stats -@ 2 -r {REF} {input.bam} > {output}"
+
+rule idxstats_bam:
+    input:
+        bam = rules.bwa_mem_samtools.output.bam,
+        bai = rules.index_bam.output[0]
+    output:
+        stats = os.path.join(OUTMAIN, "bam", "{sample}.idxstat")
+    shell:
+        "{SAMTOOLS} idxstats {input.bam} > {output}"
+
+rule multiqc_stats:
+    input:
+        expand(os.path.join(OUTMAIN, "bam", "{sample}.{s}"),sample=config.keys(), s=["flagstat", "idxstat", "stats"]),
+        #expand(os.path.join(OUTMAIN, "trim", "{sample}.settings"),sample=config.keys())
+    output:
+        f=os.path.join(OUTMAIN, "multiqc", "report.html")
+    params:
+        dirname = lambda wildcards, output: os.path.dirname(output.f),
+        base =  lambda wildcards, output: os.path.basename(output.f).replace(".html", "")
+    run:
+        dirs = set()
+        for f in input:
+            dirs.add(os.path.dirname(f))
+        dirs_string = " ".join(dirs)
+
+        shell("{MULTIQC} -f -o {params.dirname} -n {params.base} {dirs_string}")
+
+
+rule MQfilter_bam:
+    input:
+        bam = os.path.join(OUTMAIN, "bam", "{sample}.bam")
+    output:
+        bam = os.path.join(OUTMAIN, "MQ30bam", "{sample}.MQ30.bam"),
+    shell: """
+#	 mkdir -p os.path.join(OUTMAIN, "MQ30bam")
+         {SAMTOOLS} view -hbq 30 -@ 2 {input.bam} -o {output.bam}
+"""
+
+rule fastqc_postmap:
+    ## https://stackoverflow.com/a/50882104
+    input:
+        bam = os.path.join(OUTMAIN, "MQ30bam", "{sample}.MQ30.bam")
+    output:
+        directory(os.path.join(OUTMAIN, "fastqc_postmap", "{sample}"))
+    threads: 2
+    log:
+        os.path.join(OUTMAIN, "fastqc_postmap", "{sample}.log")
+    shell: """
+         mkdir -p {output}
+	 {FASTQC} -o {output} -f bam -t {threads} {input.bam} &> {log};
+"""
+
+rule multiqc_fastqc_postmap:
+    input:
+        expand(os.path.join(OUTMAIN, "fastqc_postmap", "{sample}"),sample=config.keys())
+    output:
+        f=os.path.join(OUTMAIN, "fastqc_postmap_multiqc", "report.html")
+    params:
+        dirname = lambda wildcards, output: os.path.dirname(output.f),
+        base =  lambda wildcards, output: os.path.basename(output.f).replace(".html", "")
+    run:
+        dirs = set()
+        for f in input:
+            dirs.add(f)
+        dirs_string = " ".join(dirs)
+        shell("{MULTIQC} -f -o {params.dirname} -n {params.base} {dirs_string}")

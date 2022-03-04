@@ -1,0 +1,71 @@
+depths:
+  'L142':
+    - 10
+    - 43
+  'LIV5':
+    - 10
+    - 50
+  '28697':
+    - 10
+    - 43
+  '28755':
+    - 10
+    - 42
+  '28547':
+    - 10
+    - 35
+  '30388':
+    - 10
+    - 53
+  '34474':
+    - 10
+    - 56
+  '34472':
+    - 10
+    - 48
+  '34449':
+    - 10
+    - 56
+  '30877':
+    - 10
+    - 45
+  '30977':
+    - 10
+    - 42
+  '16066':
+    - 10
+    - 49
+  '16098':
+    - 10
+    - 41
+  '97074':
+    - 10
+    - 40
+  '97124':
+    - 10
+    - 42
+  'bf186':
+    - 12
+    - 74
+  'gelada':
+    - 14
+    - 81
+
+samples:
+  'L142': /home/users/cindy/local/baboons/work/bams/realignedBam.L142.bam
+  'LIV5': /home/users/cindy/local/baboons/work/bams/realignedBam.LIV5.bam
+  '28697': /home/users/cindy/local/baboons/work/bams/realignedBam.28697.bam
+  '28755': /home/users/cindy/local/baboons/work/bams/realignedBam.28755.bam
+  '28547': /home/users/cindy/local/baboons/work/bams/realignedBam.28547.bam
+  '30388': /home/users/cindy/local/baboons/work/bams/realignedBam.30388.bam
+  '34474': /home/users/cindy/local/baboons/work/bams/34474.dups.bam
+  '34472': /home/users/cindy/local/baboons/work/bams/34472.dups.bam
+  '34449': /home/users/cindy/local/baboons/work/bams/34449.dups.bam
+  '30877': /home/users/cindy/local/baboons/work/bams/realignedBam.30877.bam
+  '30977': /home/users/cindy/local/baboons/work/bams/realignedBam.30977.bam
+  '16066': /home/users/cindy/local/baboons/work/bams/realignedBam.16066.bam
+  '16098': /home/users/cindy/local/baboons/work/bams/realignedBam.16098.bam
+  '97074': /home/users/cindy/local/baboons/work/bams/realignedBam.97074.bam
+  '97124': /home/users/cindy/local/baboons/work/bams/realignedBam.97124.bam
+  'bf186': /home/users/cindy/local/baboons/work/bams/bf186_paired.bam
+  'gelada': /home/users/cindy/local/baboons/work/bams/gelada.dups.bam
