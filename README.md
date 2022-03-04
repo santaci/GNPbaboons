@@ -14,7 +14,8 @@ Mapping and Variant Calling scripts can be found in their respective folders.
 ## Population Structure
 ### *D*-Statistics and *f*-statistics
 Scripts for both genotype-based *D*-statistics (POPSTAT) and read sampling method (ANGSD) can be found here. 
-Details of *f<sub>3</sub>* and *f<sub>4</sub>* 
+Details of *f<sub>3</sub>* and *f<sub>4</sub>* runs using AdmixTools can be found in the paper's Material and Methods.
+Should you require further clarification on set-up and running of *f*-statistics please contact: Ludovica Molinaro (lu.molinario8@gmail.com) and Luca Pagani (lp.lucapagani@gmail.com).
 
 ### PCA
 Please see the paper's Material and Methods section for exact parameters used in PLINK and smartPCA.
