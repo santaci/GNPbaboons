@@ -30,5 +30,3 @@ Snakemake for PSMC can be found in the psmc folder. The `include.bed` file refer
 ### qpGraph, ELAI, and MALDER/ALDER 
 For details on how these methods were run, please refer to the paper's Material and Methods section. 
 Should you require further clarification on set-up and running of these analyses please contact: Ludovica Molinaro (lu.molinario8@gmail.com) and Luca Pagani (lp.lucapagani@gmail.com).
-
-Scripts and analyses performed in "Genomic variation in baboons from central Mozambique unveils complex evolutionary relationships with other Papio species."
